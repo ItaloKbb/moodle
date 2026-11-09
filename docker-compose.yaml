@@ -16,8 +16,10 @@ services:
       - MOODLE_ADMIN_EMAIL=${MOODLE_ADMIN_EMAIL:-admin@example.com}
       - MOODLE_SITE_NAME=${MOODLE_SITE_NAME:-Moodle SENAI}
       - MOODLE_SITE_SHORTNAME=${MOODLE_SITE_SHORTNAME:-moodle}
+      - MOODLE_MAXBYTES=${MOODLE_MAXBYTES:-0}
     volumes:
       - moodledata:/var/www/moodledata
+      - /data/moodle-mbz:/var/www/mbz
     depends_on:
       db:
         condition: service_healthy
