@@ -23,6 +23,12 @@ $CFG->dboptions = [
 ];
 
 $CFG->wwwroot   = rtrim((string) $env('MOODLE_URL', 'http://localhost'), '/');
+
+// Atrás do Cloudflare/Coolify o acesso público é sempre por HTTPS, mesmo que o
+// domínio no Coolify esteja como http://. Força https:// no endereço do site.
+if (filter_var($env('MOODLE_FORCE_HTTPS', 'false'), FILTER_VALIDATE_BOOLEAN)) {
+    $CFG->wwwroot = preg_replace('#^http://#i', 'https://', $CFG->wwwroot);
+}
 $CFG->dataroot  = $env('MOODLE_DATA', '/var/www/moodledata');
 $CFG->admin     = 'admin';
 $CFG->directorypermissions = 02777;
