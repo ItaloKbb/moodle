@@ -7,8 +7,10 @@ ROLE=${MOODLE_ROLE:-web}
 
 run_php() { su -s /bin/bash www-data -c "php $*"; }
 
-mkdir -p "$MOODLE_DATA"
-chown www-data:www-data "$MOODLE_DATA"
+mkdir -p "$MOODLE_DATA" "$MOODLE_DATA/phptmp"
+chown www-data:www-data "$MOODLE_DATA" "$MOODLE_DATA/phptmp"
+# Pasta para subir .mbz grandes e restaurar via CLI (bind mount do host)
+if [ -d /var/www/mbz ]; then chmod 755 /var/www/mbz || true; fi
 
 export PGPASSWORD="${MOODLE_DB_PASSWORD:-}"
 PSQL=(psql -h "${MOODLE_DB_HOST:-db}" -p "${MOODLE_DB_PORT:-5432}" -U "${MOODLE_DB_USER:-moodle}" -d "${MOODLE_DB_NAME:-moodle}" -tAc)
@@ -47,6 +49,12 @@ elif [ -n "${MOODLE_ADMIN_PASSWORD:-}" ]; then
     echo "[moodle] instalação concluída."
 else
     echo "[moodle] MOODLE_ADMIN_PASSWORD vazio — conclua a instalação pelo navegador."
+fi
+
+# Limite de upload do site (0 = usar o limite do servidor/PHP)
+if [ -n "${MOODLE_MAXBYTES:-}" ] && is_installed; then
+    run_php "$MOODLE_DIR/admin/cli/cfg.php --name=maxbytes --set=${MOODLE_MAXBYTES}" || true
+    echo "[moodle] maxbytes=${MOODLE_MAXBYTES}"
 fi
 
 exec "$@"
