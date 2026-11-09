@@ -1,0 +1,57 @@
+services:
+  moodle:
+    build: .
+    restart: unless-stopped
+    environment:
+      - SERVICE_URL_MOODLE_80
+      - MOODLE_URL=${SERVICE_URL_MOODLE}
+      - MOODLE_ROLE=web
+      - MOODLE_DB_HOST=db
+      - MOODLE_DB_NAME=${POSTGRES_DB:-moodle}
+      - MOODLE_DB_USER=${SERVICE_USER_POSTGRES}
+      - MOODLE_DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+      - MOODLE_ADMIN_USER=${MOODLE_ADMIN_USER:-admin}
+      - MOODLE_ADMIN_PASSWORD=${SERVICE_PASSWORD_MOODLEADMIN}
+      - MOODLE_ADMIN_EMAIL=${MOODLE_ADMIN_EMAIL:-admin@example.com}
+      - MOODLE_SITE_NAME=${MOODLE_SITE_NAME:-Moodle SENAI}
+      - MOODLE_SITE_SHORTNAME=${MOODLE_SITE_SHORTNAME:-moodle}
+    volumes:
+      - moodledata:/var/www/moodledata
+    depends_on:
+      db:
+        condition: service_healthy
+
+  cron:
+    build: .
+    restart: unless-stopped
+    environment:
+      - MOODLE_URL=${SERVICE_URL_MOODLE}
+      - MOODLE_ROLE=cron
+      - MOODLE_DB_HOST=db
+      - MOODLE_DB_NAME=${POSTGRES_DB:-moodle}
+      - MOODLE_DB_USER=${SERVICE_USER_POSTGRES}
+      - MOODLE_DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+    volumes:
+      - moodledata:/var/www/moodledata
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-moodle}
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  moodledata:
+  pgdata:
