@@ -5,6 +5,7 @@ services:
     environment:
       - SERVICE_URL_MOODLE_80
       - MOODLE_URL=${SERVICE_URL_MOODLE}
+      - MOODLE_FORCE_HTTPS=${MOODLE_FORCE_HTTPS:-true}
       - MOODLE_ROLE=web
       - MOODLE_DB_HOST=db
       - MOODLE_DB_NAME=${POSTGRES_DB:-moodle}
@@ -26,6 +27,7 @@ services:
     restart: unless-stopped
     environment:
       - MOODLE_URL=${SERVICE_URL_MOODLE}
+      - MOODLE_FORCE_HTTPS=${MOODLE_FORCE_HTTPS:-true}
       - MOODLE_ROLE=cron
       - MOODLE_DB_HOST=db
       - MOODLE_DB_NAME=${POSTGRES_DB:-moodle}
